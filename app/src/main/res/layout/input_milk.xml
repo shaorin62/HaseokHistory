@@ -13,12 +13,14 @@
             android:id="@+id/datePickButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
             android:text="날짜 선택"/>
 
         <TextView
             android:id="@+id/dateText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="150dp"
+            android:layout_height="25dp"
+            android:layout_marginLeft="20dp"
             />
 
     </LinearLayout>
@@ -32,12 +34,14 @@
             android:id="@+id/timePickButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
             android:text="시간 선택"/>
 
         <TextView
             android:id="@+id/timeText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="150dp"
+            android:layout_marginLeft="20dp"
+            android:layout_height="25dp" />
     </LinearLayout>
 
     <RelativeLayout
@@ -47,12 +51,31 @@
         
         <EditText
             android:id="@+id/MilkText"
-            android:layout_width="200dp"
+            android:layout_width="100dp"
             android:layout_marginTop="50dp"
             android:layout_marginLeft="50dp"
             android:layout_weight = "4"
             android:layout_height="wrap_content"
-            android:text="Milk"/>
+            android:inputType="number"
+            android:text= "0"
+            android:textSize="30sp"
+            android:hint="Milk"/>
+
+        <ImageView
+            android:id="@+id/imgUp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="50dp"
+            android:layout_toRightOf = "@+id/MilkText"
+            android:src="@drawable/imgup"/>
+
+        <ImageView
+            android:id="@+id/imgDown"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_toRightOf = "@+id/MilkText"
+            android:layout_below="@+id/imgUp"
+            android:src="@drawable/imgdown"/>
 
         <Button
             android:id="@+id/btnInsert"
@@ -60,7 +83,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp"
-            android:layout_toRightOf = "@+id/MilkText"
+            android:layout_toRightOf = "@+id/imgUp"
             android:onClick="onClick"
             android:text="저장"/>
 
