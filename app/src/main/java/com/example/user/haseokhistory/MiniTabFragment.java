@@ -1,24 +1,35 @@
 package com.example.user.haseokhistory;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.util.Log;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -29,10 +40,22 @@ public class MiniTabFragment extends Fragment {
     DatePickerDialog datePickerDialog;
     TimePickerDialog timePickerDialog;
 
+    //Tab1
+    ArrayList<String> mArrMilk = new ArrayList<String>();
+    ArrayAdapter<String> mAdapter;
+    int mSelectIndex = -1;
+
+
+
     //TAB2
     TextView DateText ;
     TextView TimeText ;
     EditText MilkText;
+    ListView mListmilk;
+
+    DbHelper mDbHelper;
+    SQLiteDatabase mDb;
+    Cursor mCursor;
 
     GregorianCalendar calendar = new GregorianCalendar();
 
@@ -41,7 +64,6 @@ public class MiniTabFragment extends Fragment {
     int day= calendar.get(Calendar.DAY_OF_MONTH);
     int hour = calendar.get(Calendar.HOUR);
     int minute = calendar.get(Calendar.MINUTE);
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -126,15 +148,14 @@ public class MiniTabFragment extends Fragment {
             container.removeView((View) object);
         }
 
-
         @Override
         public int getItemPosition(Object object) {
-
             return POSITION_NONE;
-
         }
-
     }
+
+
+    //------------------생성된 탭 별 이벤트 -------------------------------------------
 
     //사용자의 첫번째 탭
     public View HistoryTab (ViewGroup container){
@@ -144,6 +165,15 @@ public class MiniTabFragment extends Fragment {
                 container, false);
         // Add the newly created View to the ViewPager
         container.addView(view);
+
+        //DBHelper 객체 생성하여 변수에 담기
+        mDbHelper = new DbHelper(view.getContext());
+        //읽고 쓰기가 가능한 DB 객체를 반환합니다.
+        mDb =  mDbHelper.getWritableDatabase();
+
+        //모든 리스트 화면에 갱신
+        initListView(view);
+        SelectRtn();
 
         return view;
 
@@ -162,6 +192,7 @@ public class MiniTabFragment extends Fragment {
         //날짜와 시간을 가져오는 팝업
         Button datebutton = (Button)view.findViewById(R.id.datePickButton);
         Button timebutton = (Button)view.findViewById(R.id.timePickButton);
+        Button btnInsert = (Button)view.findViewById(R.id.btnInsert);
 
         DateText = (TextView)view.findViewById(R.id.dateText);
         TimeText = (TextView)view.findViewById(R.id.timeText);
@@ -173,43 +204,27 @@ public class MiniTabFragment extends Fragment {
         ImageView mDown = (ImageView)view.findViewById(R.id.imgDown);
 
         MilkText = (EditText)view.findViewById(R.id.MilkText);
-
         //------------------------------------------------
 
         //버튼 클릭 이벤트 리스너
         datebutton.setOnClickListener(new Tab2ButtonClick());
         timebutton.setOnClickListener(new Tab2ButtonClick());
+        btnInsert.setOnClickListener(new Tab2ButtonClick());
         mUp.setOnClickListener(new Tab2ButtonClick());
         mDown.setOnClickListener(new Tab2ButtonClick());
 
-        return view;
 
-    }
-
-    //사용자의 세번째 탭
-    public View ETCTab (ViewGroup container, int position){
-        View view;
-        TextView title;
-
-        // Inflate a new layout from our resources
-        view = getActivity().getLayoutInflater().inflate(R.layout.pager_item,
-                container, false);
-        // Add the newly created View to the ViewPager
-        container.addView(view);
-
-        // Retrieve a TextView from the inflated View, and update it's text
-        title = (TextView) view.findViewById(R.id.item_title);
-        title.setText(String.valueOf(position + 1));
 
         return view;
 
     }
-
 
     //두번째 탭 클릭 이벤트 리스너
     public class Tab2ButtonClick implements View.OnClickListener{
 
         public void onClick(final View v){
+            int ReturnValue = 0;
+
             switch (v.getId()){
                 case R.id.datePickButton :
                     DatePickerDialog.OnDateSetListener callback = new DatePickerDialog.OnDateSetListener(){
@@ -231,16 +246,12 @@ public class MiniTabFragment extends Fragment {
                         }
                     };
 
-                    timePickerDialog = new TimePickerDialog(v.getContext(), callback2, hour, minute , true);
+                    timePickerDialog = new TimePickerDialog(v.getContext(), callback2, hour, minute,true );
                     timePickerDialog.show();
                     break;
                 case R.id.imgUp :
 
-                    String value = "";
-                    int ReturnValue = 0;
-
-                    value = MilkText.getText().toString();
-                    ReturnValue = Integer.parseInt(value);
+                    ReturnValue = Integer.parseInt(MilkText.getText().toString());
 
                     if(ReturnValue == 0 ){
                         MilkText.setText("10");
@@ -253,12 +264,166 @@ public class MiniTabFragment extends Fragment {
 
                     break;
                 case R.id.imgDown :
+
+                    ReturnValue = Integer.parseInt(MilkText.getText().toString());
+
+                    if(ReturnValue == 0){
+                        MilkText.setText("0");
+                    }else{
+                        ReturnValue -= 10;
+                        MilkText.setText(String.valueOf(ReturnValue));
+                    }
+
                     //Toast.makeText(v.getContext(),"Down 버튼 클릭", Toast.LENGTH_SHORT).show();
                     //MilkText.setText(MilkText.getText() + "10" );
                     break;
 
+                case R.id.btnInsert:
+                    onAddEvent();
+                    break;
+
             }
         }
+    }
+
+    //사용자의 세번째 탭
+    public View ETCTab (ViewGroup container, int position){
+        View view;
+        TextView title;
+
+        // Inflate a new layout from our resources
+        view = getActivity().getLayoutInflater().inflate(R.layout.pager_item,
+                container, false);
+        // Add the newly created View to the ViewPager
+        container.addView(view);
+
+        // Retrieve a TextView from the inflated View, and update it's text
+        title = (TextView) view.findViewById(R.id.item_title);
+        title.setText(String.valueOf(position + 1));
+
+        return view;
+
+    }
+
+    //------------------생성된 탭 별 이벤트 종료-------------------------------------------
+
+
+    //-------SQLite 생성과 업그레이드------------------------------------------
+
+    class DbHelper extends SQLiteOpenHelper {
+
+        public DbHelper(Context context){
+            super(context,"HaseokHistory", null, 1);
+        }
+
+        //앱이 실행될때 한번만 실행
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            db.execSQL("create table Milk(seq integer PRIMARY KEY autoincrement, date TEXT, time TEXT, milk integer);");
+
+        }
+
+        //DB 업그레이드 될때 실행됨
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            //기존 테이블 삭제하고 새로 생성
+            db.execSQL("drop table if exists Milk");
+            onCreate(db);
+        }
+    }
+
+    //데이터 삽입
+    public void onAddEvent(){
+        String strDateText = DateText.getText().toString();
+        String strTimeText = TimeText.getText().toString();
+        int intMilkText = Integer.parseInt(MilkText.getText().toString());
+
+        //입력한 데이터로 쿼리문 작성
+        String strQuery = "insert into  Milk(date, time, milk) values('" + strDateText + "' , '" + strTimeText +"' , " + intMilkText + ");";
+        mDb.execSQL(strQuery);
+
+        SelectRtn();
+        mCursor.moveToLast();
+        mSelectIndex = mCursor.getInt(0);
+
+    }
+
+    //-----------------------------DB 조회 SelectRtn-----------------
+
+    public void initListView(View v){
+        mAdapter = new ArrayAdapter<String>(getActivity(),android.R.layout.simple_list_item_1,mArrMilk);
+        mListmilk = (ListView)v.findViewById(R.id.listMilk);
+        mListmilk.setAdapter(mAdapter);
+        mListmilk.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        mListmilk.setDivider(new ColorDrawable(Color.GRAY));
+        mListmilk.setDividerHeight(2);
+
+        mListmilk.setOnItemClickListener(mItemListener);
+
+    }
+
+    public void SelectRtn(){
+        mArrMilk.clear();
+        String Query = "select seq, date, time, milk  from Milk";
+        mCursor = mDb.rawQuery(Query, null);
+
+        for(int i = 0; i < mCursor.getCount(); i++){
+            //다음번 레코드로 커서 이동
+            mCursor.moveToNext();
+            //현재 레코드의 SEQ 를 구한다.
+            int nSEQ = mCursor.getInt(0);
+            String date = mCursor.getString(1);
+            String time = mCursor.getString(2);
+            int milk = mCursor.getInt(3);
+
+            String strRecord = nSEQ + " : " + date + " / " + time + " / " + milk + "ML";
+
+            Log.d("Tag", "--->" + strRecord);
+
+            mArrMilk.add(strRecord);
+
+        }
+        mAdapter.notifyDataSetChanged();
+    }
+
+    //------------------개체 선택 Listener ---------------
+
+    AdapterView.OnItemClickListener mItemListener = new AdapterView.OnItemClickListener(){
+        public void onItemClick(AdapterView parent, View view, int position, long id){
+            ViewRecord(position);
+
+        }
+    };
+
+    public void ViewRecord(int nIndex){
+        mCursor.moveToPosition(nIndex);
+        int nSEQ = mCursor.getInt(0);
+        String date = mCursor.getString(1);
+        String time = mCursor.getString(2);
+        int milk = mCursor.getInt(3);
+
+        //팝업으로 띄울 Layout
+        final RelativeLayout layout = (RelativeLayout)View.inflate(getActivity(), R.layout.popup_dialog,null);
+        //팝업의 EditText
+        final EditText pop_seq = (EditText)layout.findViewById(R.id.edit_seq);
+        final EditText pop_date = (EditText)layout.findViewById(R.id.edit_date);
+        final EditText pop_time = (EditText)layout.findViewById(R.id.edit_time);
+        final EditText pop_milk = (EditText)layout.findViewById(R.id.edit_milk);
+
+        pop_seq.setText(String.valueOf(nSEQ));
+        pop_seq.setFocusable(false);
+        pop_seq.setClickable(false);
+
+        pop_date.setText(date);
+        pop_time.setText(time);
+        pop_milk.setText(String.valueOf(milk));
+
+        //선택된 데이터 팝업 생성
+        new AlertDialog.Builder(getActivity())
+                .setTitle("DataSelect")
+                .setView(layout)
+                .setPositiveButton("OK", null)
+                .show();
     }
 
 }

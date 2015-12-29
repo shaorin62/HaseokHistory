@@ -1,6 +1,9 @@
 package com.example.user.haseokhistory;
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -68,5 +71,4 @@ public class MainActivity extends FragmentActivity {
     }
 
     //------------------------------기본동작 매서드 종료 -----------------------------------------
-
 }

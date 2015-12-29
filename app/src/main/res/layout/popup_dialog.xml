@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    
+    <EditText
+        android:id="@+id/edit_seq"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="16sp"/>
+    <EditText
+        android:id="@+id/edit_date"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_below = "@+id/edit_seq"/>
+    <EditText
+        android:id="@+id/edit_time"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_below = "@+id/edit_date"
+        android:layout_marginTop="16sp"/>
+    <EditText
+        android:id="@+id/edit_milk"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_below = "@+id/edit_time"/>
+    <TextView
+        android:id="@+id/ViewML"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/edit_milk"
+        android:layout_below = "@+id/edit_time"
+        android:textSize="40sp"
+        android:inputType="number"
+        android:text="ML"/>
+
+    <Button
+        android:id="@+id/btnUpdate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/ViewML"
+        android:layout_below = "@+id/edit_time"
+        android:text="수정"/>
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/btnUpdate"
+        android:layout_below = "@+id/edit_time"
+        android:text="삭제"/>
+
+
+</RelativeLayout>
