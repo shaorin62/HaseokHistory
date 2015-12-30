@@ -29,8 +29,10 @@ import android.util.Log;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class MiniTabFragment extends Fragment {
@@ -40,12 +42,19 @@ public class MiniTabFragment extends Fragment {
     DatePickerDialog datePickerDialog;
     TimePickerDialog timePickerDialog;
 
+    //팝업을 띄우기 위한 다이얼로그
+    AlertDialog alertDialog;
+
+    EditText pop_seq;
+    EditText pop_date;
+    EditText pop_time;
+    EditText pop_milk;
+
     //Tab1
     ArrayList<String> mArrMilk = new ArrayList<String>();
     ArrayAdapter<String> mAdapter;
     int mSelectIndex = -1;
-
-
+    TextView TextDate;
 
     //TAB2
     TextView DateText ;
@@ -64,6 +73,11 @@ public class MiniTabFragment extends Fragment {
     int day= calendar.get(Calendar.DAY_OF_MONTH);
     int hour = calendar.get(Calendar.HOUR);
     int minute = calendar.get(Calendar.MINUTE);
+
+    Calendar c = Calendar.getInstance();
+    Date mnow = new Date();
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -95,7 +109,7 @@ public class MiniTabFragment extends Fragment {
         //탭 카운팅
         @Override
         public int getCount() {
-            return 3;
+            return 2;
         }
 
         @Override
@@ -163,8 +177,20 @@ public class MiniTabFragment extends Fragment {
         // Inflate a new layout from our resources
         view = getActivity().getLayoutInflater().inflate(R.layout.mainlist,
                 container, false);
+
         // Add the newly created View to the ViewPager
         container.addView(view);
+
+
+        TextDate = (TextView)view.findViewById(R.id.TextDate);
+        //오늘 날짜를 생성한다.
+        TextDate.setText(year + "-" + (month + 1) + "-" + day);
+
+        ImageView mLeft = (ImageView)view.findViewById(R.id.imgLeft);
+        ImageView mRight = (ImageView)view.findViewById(R.id.imgRight);
+
+        mLeft.setOnClickListener(new ButtonClick());
+        mRight.setOnClickListener(new ButtonClick());
 
         //DBHelper 객체 생성하여 변수에 담기
         mDbHelper = new DbHelper(view.getContext());
@@ -207,11 +233,11 @@ public class MiniTabFragment extends Fragment {
         //------------------------------------------------
 
         //버튼 클릭 이벤트 리스너
-        datebutton.setOnClickListener(new Tab2ButtonClick());
-        timebutton.setOnClickListener(new Tab2ButtonClick());
-        btnInsert.setOnClickListener(new Tab2ButtonClick());
-        mUp.setOnClickListener(new Tab2ButtonClick());
-        mDown.setOnClickListener(new Tab2ButtonClick());
+        datebutton.setOnClickListener(new ButtonClick());
+        timebutton.setOnClickListener(new ButtonClick());
+        btnInsert.setOnClickListener(new ButtonClick());
+        mUp.setOnClickListener(new ButtonClick());
+        mDown.setOnClickListener(new ButtonClick());
 
 
 
@@ -219,8 +245,8 @@ public class MiniTabFragment extends Fragment {
 
     }
 
-    //두번째 탭 클릭 이벤트 리스너
-    public class Tab2ButtonClick implements View.OnClickListener{
+    //각종 버튼 클릭 이벤트 리스너
+    public class ButtonClick implements View.OnClickListener{
 
         public void onClick(final View v){
             int ReturnValue = 0;
@@ -278,8 +304,37 @@ public class MiniTabFragment extends Fragment {
                     //MilkText.setText(MilkText.getText() + "10" );
                     break;
 
+                case R.id.imgLeft :
+
+                    c.setTime(mnow);
+                    c.add(Calendar.DATE, -1);
+                    mnow = c.getTime();
+
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                    TextDate.setText(String.valueOf(format.format(mnow)));
+                    SelectRtn();
+
+                    break;
+                case R.id.imgRight :
+
+                    c.setTime(mnow);
+                    c.add(Calendar.DATE, 1);
+                    mnow = c.getTime();
+
+                    SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
+                    TextDate.setText(String.valueOf(format2.format(mnow)));
+                    SelectRtn();
+
+                    break;
+
                 case R.id.btnInsert:
                     onAddEvent();
+                    break;
+                case R.id.btnUpdate:
+                    onUpdateEvent();
+                    break;
+                case R.id.btnDelete:
+                    onDelEvent();
                     break;
 
             }
@@ -345,7 +400,36 @@ public class MiniTabFragment extends Fragment {
         SelectRtn();
         mCursor.moveToLast();
         mSelectIndex = mCursor.getInt(0);
+    }
 
+    //데이터 수정
+    public void onUpdateEvent(){
+        String strQuery;
+        String strdate;
+        String strtime;
+        int intmilk;
+
+        strdate = String.valueOf(pop_date.getText());
+        strtime = String.valueOf(pop_time.getText());
+        intmilk = Integer.parseInt(String.valueOf(pop_milk.getText()));
+
+        strQuery = "update Milk set date = '" + strdate + "', time = '" + strtime + "', milk = " + intmilk + " where seq = " + mSelectIndex;
+
+        mDb.execSQL(strQuery);
+        SelectRtn();
+        //갱신후 화면 닫기
+        alertDialog.dismiss();
+    }
+
+
+    //데이터 삭제
+    public void onDelEvent(){
+        mDb.execSQL("delete from Milk where seq = " + mSelectIndex);
+        //삭제하고 데이터 화면에 갱신
+        SelectRtn();
+
+        //갱신후 화면 닫기
+        alertDialog.dismiss();
     }
 
     //-----------------------------DB 조회 SelectRtn-----------------
@@ -363,8 +447,12 @@ public class MiniTabFragment extends Fragment {
     }
 
     public void SelectRtn(){
+
+        String NowDate;
+        NowDate = String.valueOf(TextDate.getText());
+
         mArrMilk.clear();
-        String Query = "select seq, date, time, milk  from Milk";
+        String Query = "select seq, date, time, milk  from Milk where date = '" + NowDate + "'";
         mCursor = mDb.rawQuery(Query, null);
 
         for(int i = 0; i < mCursor.getCount(); i++){
@@ -395,6 +483,7 @@ public class MiniTabFragment extends Fragment {
         }
     };
 
+    //팝업에서 선택된 레코드 보여주기
     public void ViewRecord(int nIndex){
         mCursor.moveToPosition(nIndex);
         int nSEQ = mCursor.getInt(0);
@@ -402,13 +491,18 @@ public class MiniTabFragment extends Fragment {
         String time = mCursor.getString(2);
         int milk = mCursor.getInt(3);
 
+        mSelectIndex = mCursor.getInt(0);
+
         //팝업으로 띄울 Layout
-        final RelativeLayout layout = (RelativeLayout)View.inflate(getActivity(), R.layout.popup_dialog,null);
+        final RelativeLayout layout = (RelativeLayout)View.inflate(getActivity(), R.layout.popup_dialog, null);
         //팝업의 EditText
-        final EditText pop_seq = (EditText)layout.findViewById(R.id.edit_seq);
-        final EditText pop_date = (EditText)layout.findViewById(R.id.edit_date);
-        final EditText pop_time = (EditText)layout.findViewById(R.id.edit_time);
-        final EditText pop_milk = (EditText)layout.findViewById(R.id.edit_milk);
+        pop_seq = (EditText)layout.findViewById(R.id.edit_seq);
+        pop_date = (EditText)layout.findViewById(R.id.edit_date);
+        pop_time = (EditText)layout.findViewById(R.id.edit_time);
+        pop_milk = (EditText)layout.findViewById(R.id.edit_milk);
+        Button btnUpdate= (Button)layout.findViewById(R.id.btnUpdate);
+        Button btnDelete = (Button)layout.findViewById(R.id.btnDelete);
+
 
         pop_seq.setText(String.valueOf(nSEQ));
         pop_seq.setFocusable(false);
@@ -418,12 +512,18 @@ public class MiniTabFragment extends Fragment {
         pop_time.setText(time);
         pop_milk.setText(String.valueOf(milk));
 
+        btnUpdate.setOnClickListener(new ButtonClick());
+        btnDelete.setOnClickListener(new ButtonClick());
+
         //선택된 데이터 팝업 생성
-        new AlertDialog.Builder(getActivity())
+        alertDialog  = new AlertDialog.Builder(getActivity())
                 .setTitle("DataSelect")
                 .setView(layout)
                 .setPositiveButton("OK", null)
                 .show();
-    }
 
+
+        alertDialog.show();
+
+    }
 }

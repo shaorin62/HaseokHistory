@@ -44,6 +44,7 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/ViewML"
         android:layout_below = "@+id/edit_time"
+        android:onClick="onClick"
         android:text="수정"/>
     <Button
         android:id="@+id/btnDelete"
@@ -51,6 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/btnUpdate"
         android:layout_below = "@+id/edit_time"
+        android:onClick="onClick"
         android:text="삭제"/>
 
 

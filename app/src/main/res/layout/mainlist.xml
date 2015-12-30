@@ -5,10 +5,28 @@
 
     <TextView
         android:id="@+id/TextDate"
-        android:layout_width="match_parent"
+        android:layout_width="150dp"
         android:layout_height="50dp"
+        android:layout_marginTop="20dp"
         android:layout_marginLeft="20dp"
+        android:textSize="25dp"
         />
+
+    <ImageView
+        android:id="@+id/imgLeft"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="20dp"
+        android:layout_toRightOf = "@+id/TextDate"
+        android:src="@drawable/imgleft"/>
+
+    <ImageView
+        android:id="@+id/imgRight"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="20dp"
+        android:layout_toRightOf = "@+id/imgLeft"
+        android:src="@drawable/imgright"/>
 
     <ListView
         android:id="@+id/listMilk"
