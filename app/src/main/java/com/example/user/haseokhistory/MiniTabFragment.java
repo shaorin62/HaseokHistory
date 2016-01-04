@@ -78,7 +78,6 @@ public class MiniTabFragment extends Fragment {
     Date mnow = new Date();
 
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -184,7 +183,8 @@ public class MiniTabFragment extends Fragment {
 
         TextDate = (TextView)view.findViewById(R.id.TextDate);
         //오늘 날짜를 생성한다.
-        TextDate.setText(year + "-" + (month + 1) + "-" + day);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        TextDate.setText(String.valueOf(format.format(mnow)));
 
         ImageView mLeft = (ImageView)view.findViewById(R.id.imgLeft);
         ImageView mRight = (ImageView)view.findViewById(R.id.imgRight);
@@ -208,6 +208,7 @@ public class MiniTabFragment extends Fragment {
     //사용자의 두번째 탭
     public View InputDataTab (ViewGroup container){
         View view;
+        String strAM_PM = "";
 
         // Inflate a new layout from our resources
         view = getActivity().getLayoutInflater().inflate(R.layout.input_milk,
@@ -223,8 +224,18 @@ public class MiniTabFragment extends Fragment {
         DateText = (TextView)view.findViewById(R.id.dateText);
         TimeText = (TextView)view.findViewById(R.id.timeText);
 
-        DateText.setText(year +  "-" + (month +1) + "-"  + day);
-        TimeText.setText(hour +  ":" + minute);
+        //날짜 형식에 맞추기
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        DateText.setText(String.valueOf(format.format(mnow)));
+
+        //시간 형식 맞추기
+        Calendar datetime = Calendar.getInstance();
+        if (datetime.get(Calendar.AM_PM) == Calendar.AM){
+            strAM_PM = "AM";
+        }else if (datetime.get(Calendar.AM_PM) == Calendar.PM){
+            strAM_PM = "PM";
+        }
+        TimeText.setText(strAM_PM + ":" + hour + ":" + minute);
 
         ImageView mUp = (ImageView)view.findViewById(R.id.imgUp);
         ImageView mDown = (ImageView)view.findViewById(R.id.imgDown);
@@ -268,7 +279,16 @@ public class MiniTabFragment extends Fragment {
                     TimePickerDialog.OnTimeSetListener callback2 = new TimePickerDialog.OnTimeSetListener(){
                         public void onTimeSet(TimePicker view, int hourOfDay, int minute){
                             //Toast.makeText(v.getContext(),hourOfDay +  " : " + minute, Toast.LENGTH_SHORT).show();
-                            TimeText.setText(hourOfDay + ":" + minute);
+
+                            String strAM_PM = "";
+                            Calendar datetime = Calendar.getInstance();
+                            if (datetime.get(Calendar.AM_PM) == Calendar.AM){
+                                strAM_PM = "AM";
+                            }else if (datetime.get(Calendar.AM_PM) == Calendar.PM){
+                                strAM_PM = "PM";
+                            }
+
+                            TimeText.setText(hourOfDay + ":" + minute + " : " + strAM_PM);
                         }
                     };
 
@@ -391,6 +411,9 @@ public class MiniTabFragment extends Fragment {
     public void onAddEvent(){
         String strDateText = DateText.getText().toString();
         String strTimeText = TimeText.getText().toString();
+
+
+
         int intMilkText = Integer.parseInt(MilkText.getText().toString());
 
         //입력한 데이터로 쿼리문 작성
@@ -398,8 +421,17 @@ public class MiniTabFragment extends Fragment {
         mDb.execSQL(strQuery);
 
         SelectRtn();
+
+        Toast.makeText(getActivity(), "데이터가 저장되었습니다. ", Toast.LENGTH_LONG).show();
+
         mCursor.moveToLast();
+
+        //Log.d("TAG", "----->" + mSelectIndex);
+
         mSelectIndex = mCursor.getInt(0);
+
+        //페이지 화면 이동
+        mViewPager.setCurrentItem(0);
     }
 
     //데이터 수정
@@ -433,7 +465,6 @@ public class MiniTabFragment extends Fragment {
     }
 
     //-----------------------------DB 조회 SelectRtn-----------------
-
     public void initListView(View v){
         mAdapter = new ArrayAdapter<String>(getActivity(),android.R.layout.simple_list_item_1,mArrMilk);
         mListmilk = (ListView)v.findViewById(R.id.listMilk);
@@ -450,6 +481,7 @@ public class MiniTabFragment extends Fragment {
 
         String NowDate;
         NowDate = String.valueOf(TextDate.getText());
+        Log.d("Tag", "--->" + NowDate);
 
         mArrMilk.clear();
         String Query = "select seq, date, time, milk  from Milk where date = '" + NowDate + "'";
@@ -464,9 +496,10 @@ public class MiniTabFragment extends Fragment {
             String time = mCursor.getString(2);
             int milk = mCursor.getInt(3);
 
-            String strRecord = nSEQ + " : " + date + " / " + time + " / " + milk + "ML";
+            String strRecord = nSEQ + " : " + date + " | " + time + " | " + milk + "ML";
 
             Log.d("Tag", "--->" + strRecord);
+
 
             mArrMilk.add(strRecord);
 
@@ -493,6 +526,7 @@ public class MiniTabFragment extends Fragment {
 
         mSelectIndex = mCursor.getInt(0);
 
+
         //팝업으로 띄울 Layout
         final RelativeLayout layout = (RelativeLayout)View.inflate(getActivity(), R.layout.popup_dialog, null);
         //팝업의 EditText
@@ -517,6 +551,7 @@ public class MiniTabFragment extends Fragment {
 
         //선택된 데이터 팝업 생성
         alertDialog  = new AlertDialog.Builder(getActivity())
+                .setCancelable(false)
                 .setTitle("DataSelect")
                 .setView(layout)
                 .setPositiveButton("OK", null)

@@ -60,20 +60,29 @@
             android:text= "0"
             android:textSize="30sp"
             android:hint="Milk"/>
+        <TextView
+            android:id="@+id/ViewML"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:layout_toRightOf="@+id/MilkText"
+            android:textSize="40sp"
+            android:inputType="number"
+            android:text="ML"/>
 
         <ImageView
             android:id="@+id/imgUp"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_marginTop="50dp"
-            android:layout_toRightOf = "@+id/MilkText"
+            android:layout_toRightOf = "@+id/ViewML"
             android:src="@drawable/imgup"/>
 
         <ImageView
             android:id="@+id/imgDown"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_toRightOf = "@+id/MilkText"
+            android:layout_toRightOf = "@+id/ViewML"
             android:layout_below="@+id/imgUp"
             android:src="@drawable/imgdown"/>
 
