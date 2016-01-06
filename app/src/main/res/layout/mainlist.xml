@@ -5,10 +5,11 @@
 
     <TextView
         android:id="@+id/TextDate"
-        android:layout_width="150dp"
-        android:layout_height="50dp"
+        android:layout_width="130dp"
+        android:layout_height="40dp"
         android:layout_marginTop="20dp"
         android:layout_marginLeft="20dp"
+        android:gravity="center"
         android:textSize="25dp"
         />
 
@@ -27,6 +28,27 @@
         android:layout_marginTop="20dp"
         android:layout_toRightOf = "@+id/imgLeft"
         android:src="@drawable/imgright"/>
+
+    <TextView
+        android:id="@+id/Sum"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="20dp"
+        android:layout_toRightOf = "@+id/imgRight"
+        android:textSize="18dp"
+        android:gravity="center"
+        android:text="총량:"
+        />
+
+    <TextView
+        android:id="@+id/sumMilk"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="20dp"
+        android:layout_toRightOf = "@+id/Sum"
+        android:gravity="center"
+        android:textSize="20dp"
+        />
 
     <ListView
         android:id="@+id/listMilk"

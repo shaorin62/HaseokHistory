@@ -45,6 +45,7 @@ public class MiniTabFragment extends Fragment {
     //팝업을 띄우기 위한 다이얼로그
     AlertDialog alertDialog;
 
+    //팝업 변수
     EditText pop_seq;
     EditText pop_date;
     EditText pop_time;
@@ -55,6 +56,7 @@ public class MiniTabFragment extends Fragment {
     ArrayAdapter<String> mAdapter;
     int mSelectIndex = -1;
     TextView TextDate;
+    TextView sumMilk;
 
     //TAB2
     TextView DateText ;
@@ -65,6 +67,7 @@ public class MiniTabFragment extends Fragment {
     DbHelper mDbHelper;
     SQLiteDatabase mDb;
     Cursor mCursor;
+    Cursor mCursor2;
 
     GregorianCalendar calendar = new GregorianCalendar();
 
@@ -78,6 +81,7 @@ public class MiniTabFragment extends Fragment {
     Date mnow = new Date();
 
 
+    //Fragment Cycle [onAttach() - > onCreate() - > onCreateView() - >onActivityCreated() -> onStart() -> onResume()]
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -124,10 +128,10 @@ public class MiniTabFragment extends Fragment {
 
             switch (position) {
                 case 0:
-                    TitleName = "History";
+                    TitleName = "Milk List";
                     break;
                 case 1:
-                    TitleName = "Input Data";
+                    TitleName = "Data input";
                     break;
                 case 2:
                     TitleName = "ETC";
@@ -163,6 +167,7 @@ public class MiniTabFragment extends Fragment {
 
         @Override
         public int getItemPosition(Object object) {
+            Log.d("TAG","---------------------> 7");
             return POSITION_NONE;
         }
     }
@@ -182,6 +187,8 @@ public class MiniTabFragment extends Fragment {
 
 
         TextDate = (TextView)view.findViewById(R.id.TextDate);
+        sumMilk = (TextView)view.findViewById(R.id.sumMilk);
+
         //오늘 날짜를 생성한다.
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         TextDate.setText(String.valueOf(format.format(mnow)));
@@ -199,7 +206,6 @@ public class MiniTabFragment extends Fragment {
 
         //모든 리스트 화면에 갱신
         initListView(view);
-        SelectRtn();
 
         return view;
 
@@ -235,12 +241,28 @@ public class MiniTabFragment extends Fragment {
         }else if (datetime.get(Calendar.AM_PM) == Calendar.PM){
             strAM_PM = "PM";
         }
-        TimeText.setText(strAM_PM + ":" + hour + ":" + minute);
+
+        String strHour = String.valueOf(hour);
+        String strMin = String.valueOf(minute);
+        strHour = (strHour.length() == 1)? "0"+strHour : strHour;
+        strMin = (strMin.length() == 1)? "0"+strMin : strMin;
+
+        TimeText.setText(strAM_PM + ":" + strHour + ":" + strMin);
 
         ImageView mUp = (ImageView)view.findViewById(R.id.imgUp);
         ImageView mDown = (ImageView)view.findViewById(R.id.imgDown);
 
         MilkText = (EditText)view.findViewById(R.id.MilkText);
+
+        Log.d("TAG", "-------------->" + mCursor.getInt(3));
+
+        if (mCursor.getInt(3) != 0){
+            MilkText.setText(String.valueOf(mCursor.getInt(3)));
+        }else{
+            MilkText.setText("0");
+        }
+
+
         //------------------------------------------------
 
         //버튼 클릭 이벤트 리스너
@@ -267,7 +289,15 @@ public class MiniTabFragment extends Fragment {
                     DatePickerDialog.OnDateSetListener callback = new DatePickerDialog.OnDateSetListener(){
                         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth){
                             //Toast.makeText(v.getContext(),year +  " : " + (monthOfYear +1) + " : "  + dayOfMonth, Toast.LENGTH_SHORT).show();
-                            DateText.setText(year + "-" + (monthOfYear + 1) + "-" + dayOfMonth);
+
+                            //월이 두자리인지 체크하여 01 형식을 맞춤.
+                            String strMonth = String.valueOf(monthOfYear + 1);
+                            String strDay = String.valueOf(dayOfMonth);
+
+                            strMonth = (strMonth.length() == 1)? "0" + strMonth : strMonth;
+                            strDay = (strDay.length() == 1)? "0" + strDay : strDay;
+
+                            DateText.setText(year + "-" + strMonth + "-" + strDay);
                         }
                     };
 
@@ -282,13 +312,21 @@ public class MiniTabFragment extends Fragment {
 
                             String strAM_PM = "";
                             Calendar datetime = Calendar.getInstance();
-                            if (datetime.get(Calendar.AM_PM) == Calendar.AM){
+                            datetime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                            datetime.set(Calendar.MINUTE, minute);
+
+                            if (datetime.get(Calendar.AM_PM) == Calendar.AM) {
                                 strAM_PM = "AM";
-                            }else if (datetime.get(Calendar.AM_PM) == Calendar.PM){
+                            }else if (datetime.get(Calendar.AM_PM) == Calendar.PM) {
                                 strAM_PM = "PM";
                             }
+                            String strHour = (datetime.get(Calendar.HOUR) == 0) ?"12":datetime.get(Calendar.HOUR)+"";
+                            String strMin = String.valueOf(datetime.get(Calendar.MINUTE));
 
-                            TimeText.setText(hourOfDay + ":" + minute + " : " + strAM_PM);
+                            strHour = (strHour.length() ==1)? "0" + strHour : strHour;
+                            strMin = (strMin.length() ==1)? "0" + strMin : strMin;
+
+                            TimeText.setText(strAM_PM + ":" +  strHour + ":" + strMin );
                         }
                     };
 
@@ -357,6 +395,56 @@ public class MiniTabFragment extends Fragment {
                     onDelEvent();
                     break;
 
+                case R.id.ImageCal:
+                    DatePickerDialog.OnDateSetListener callback3 = new DatePickerDialog.OnDateSetListener(){
+                        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth){
+
+                            //월이 두자리인지 체크하여 01 형식을 맞춤.
+                            String strMonth = String.valueOf(monthOfYear + 1);
+                            String strDay = String.valueOf(dayOfMonth);
+
+                            strMonth = (strMonth.length() == 1)? "0" + strMonth : strMonth;
+                            strDay = (strDay.length() == 1)? "0" + strDay : strDay;
+
+                            pop_date.setText(year + "-" + strMonth + "-" + strDay);
+                        }
+                    };
+
+                    datePickerDialog = new DatePickerDialog(v.getContext(), callback3, year,month,day);
+                    datePickerDialog.show();
+
+
+                    break;
+                case R.id.ImageTime:
+                    TimePickerDialog.OnTimeSetListener callback4 = new TimePickerDialog.OnTimeSetListener(){
+                        public void onTimeSet(TimePicker view, int hourOfDay, int minute){
+
+                            String strAM_PM = "";
+                            Calendar datetime = Calendar.getInstance();
+                            datetime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                            datetime.set(Calendar.MINUTE, minute);
+
+                            if (datetime.get(Calendar.AM_PM) == Calendar.AM) {
+                                strAM_PM = "AM";
+                            }else if (datetime.get(Calendar.AM_PM) == Calendar.PM) {
+                                strAM_PM = "PM";
+                            }
+                            String strHour = (datetime.get(Calendar.HOUR) == 0) ?"12":datetime.get(Calendar.HOUR)+"";
+                            String strMin = String.valueOf(datetime.get(Calendar.MINUTE));
+
+                            strHour = (strHour.length() ==1)? "0" + strHour : strHour;
+                            strMin = (strMin.length() ==1)? "0" + strMin : strMin;
+
+                            //Toast.makeText(v.getContext(),strHrsToShow+":"+datetime.get(Calendar.MINUTE)+" "+am_pm, Toast.LENGTH_SHORT).show();
+
+                        pop_time.setText(strAM_PM + ":" + strHour + ":" + strMin);
+                        }
+                    };
+
+                    timePickerDialog = new TimePickerDialog(v.getContext(), callback4, hour, minute,true );
+                    timePickerDialog.show();
+
+                    break;
             }
         }
     }
@@ -426,7 +514,7 @@ public class MiniTabFragment extends Fragment {
 
         mCursor.moveToLast();
 
-        //Log.d("TAG", "----->" + mSelectIndex);
+        Log.d("TAG", "----->" + mSelectIndex);
 
         mSelectIndex = mCursor.getInt(0);
 
@@ -459,7 +547,6 @@ public class MiniTabFragment extends Fragment {
         mDb.execSQL("delete from Milk where seq = " + mSelectIndex);
         //삭제하고 데이터 화면에 갱신
         SelectRtn();
-
         //갱신후 화면 닫기
         alertDialog.dismiss();
     }
@@ -474,7 +561,7 @@ public class MiniTabFragment extends Fragment {
         mListmilk.setDividerHeight(2);
 
         mListmilk.setOnItemClickListener(mItemListener);
-
+        SelectRtn();
     }
 
     public void SelectRtn(){
@@ -484,8 +571,11 @@ public class MiniTabFragment extends Fragment {
         Log.d("Tag", "--->" + NowDate);
 
         mArrMilk.clear();
-        String Query = "select seq, date, time, milk  from Milk where date = '" + NowDate + "'";
+        String Query = "select seq, date, time, milk  from Milk where date = '" + NowDate + "' order by date, time asc";
+
+        String QuerySum = "select sum(milk) SumMilk from Milk where date = '" + NowDate + "'";
         mCursor = mDb.rawQuery(Query, null);
+        mCursor2 = mDb.rawQuery(QuerySum, null);
 
         for(int i = 0; i < mCursor.getCount(); i++){
             //다음번 레코드로 커서 이동
@@ -496,7 +586,7 @@ public class MiniTabFragment extends Fragment {
             String time = mCursor.getString(2);
             int milk = mCursor.getInt(3);
 
-            String strRecord = nSEQ + " : " + date + " | " + time + " | " + milk + "ML";
+            String strRecord = date + " | " + time + " | " + milk + "ML";
 
             Log.d("Tag", "--->" + strRecord);
 
@@ -504,6 +594,13 @@ public class MiniTabFragment extends Fragment {
             mArrMilk.add(strRecord);
 
         }
+
+        //우유의 총량을 구한다.
+        mCursor2.moveToNext();
+        int SumMilk = mCursor2.getInt(0);
+        Log.d("Tag", "--->" + SumMilk);
+        sumMilk.setText(String.valueOf(SumMilk) + "ML");
+
         mAdapter.notifyDataSetChanged();
     }
 
@@ -512,12 +609,11 @@ public class MiniTabFragment extends Fragment {
     AdapterView.OnItemClickListener mItemListener = new AdapterView.OnItemClickListener(){
         public void onItemClick(AdapterView parent, View view, int position, long id){
             ViewRecord(position);
-
         }
     };
 
-    //팝업에서 선택된 레코드 보여주기
     public void ViewRecord(int nIndex){
+
         mCursor.moveToPosition(nIndex);
         int nSEQ = mCursor.getInt(0);
         String date = mCursor.getString(1);
@@ -526,39 +622,52 @@ public class MiniTabFragment extends Fragment {
 
         mSelectIndex = mCursor.getInt(0);
 
-
-        //팝업으로 띄울 Layout
         final RelativeLayout layout = (RelativeLayout)View.inflate(getActivity(), R.layout.popup_dialog, null);
+
         //팝업의 EditText
         pop_seq = (EditText)layout.findViewById(R.id.edit_seq);
         pop_date = (EditText)layout.findViewById(R.id.edit_date);
         pop_time = (EditText)layout.findViewById(R.id.edit_time);
         pop_milk = (EditText)layout.findViewById(R.id.edit_milk);
-        Button btnUpdate= (Button)layout.findViewById(R.id.btnUpdate);
-        Button btnDelete = (Button)layout.findViewById(R.id.btnDelete);
-
 
         pop_seq.setText(String.valueOf(nSEQ));
         pop_seq.setFocusable(false);
         pop_seq.setClickable(false);
 
         pop_date.setText(date);
+        pop_date.setFocusable(false);
+        pop_date.setClickable(false);
         pop_time.setText(time);
+        pop_time.setFocusable(false);
+        pop_time.setClickable(false);
+
         pop_milk.setText(String.valueOf(milk));
+
+
+        ImageView mimgCal = (ImageView)layout.findViewById(R.id.ImageCal);
+        ImageView mimgTime = (ImageView)layout.findViewById(R.id.ImageTime);
+
+        mimgCal.setOnClickListener(new ButtonClick());
+        mimgTime.setOnClickListener(new ButtonClick());
+
+        Button btnUpdate= (Button)layout.findViewById(R.id.btnUpdate);
+        Button btnDelete = (Button)layout.findViewById(R.id.btnDelete);
 
         btnUpdate.setOnClickListener(new ButtonClick());
         btnDelete.setOnClickListener(new ButtonClick());
 
+
         //선택된 데이터 팝업 생성
         alertDialog  = new AlertDialog.Builder(getActivity())
                 .setCancelable(false)
-                .setTitle("DataSelect")
+                .setTitle("상세 내역")
                 .setView(layout)
-                .setPositiveButton("OK", null)
+                .setPositiveButton("나가기", null)
                 .show();
-
 
         alertDialog.show();
 
     }
+
 }
+
