@@ -53,7 +53,9 @@ public class MiniTabFragment extends Fragment {
 
     //Tab1
     ArrayList<String> mArrMilk = new ArrayList<String>();
+    ArrayList<String> mArrMilk2 = new ArrayList<String>();
     ArrayAdapter<String> mAdapter;
+    ArrayAdapter<String> mAdapter2;
     int mSelectIndex = -1;
     TextView TextDate;
     TextView sumMilk;
@@ -63,6 +65,7 @@ public class MiniTabFragment extends Fragment {
     TextView TimeText ;
     EditText MilkText;
     ListView mListmilk;
+    ListView mLastmilk;
 
     DbHelper mDbHelper;
     SQLiteDatabase mDb;
@@ -74,7 +77,7 @@ public class MiniTabFragment extends Fragment {
     int year = calendar.get(Calendar.YEAR);
     int month = calendar.get(Calendar.MONTH);
     int day= calendar.get(Calendar.DAY_OF_MONTH);
-    int hour = calendar.get(Calendar.HOUR);
+    int hour = calendar.get(Calendar.HOUR_OF_DAY);
     int minute = calendar.get(Calendar.MINUTE);
 
     Calendar c = Calendar.getInstance();
@@ -254,9 +257,17 @@ public class MiniTabFragment extends Fragment {
 
         MilkText = (EditText)view.findViewById(R.id.MilkText);
 
-        Log.d("TAG", "-------------->" + mCursor.getInt(3));
+        String strCursorindex;
+        if(mCursor.moveToFirst()){
+            strCursorindex = mCursor.getString(mCursor.getColumnIndex("milk"));
+        }else{
+            strCursorindex = "";
+        }
 
-        if (mCursor.getInt(3) != 0){
+        Log.d("TAG", "-------------->" + strCursorindex);
+
+        if (strCursorindex != ""){
+            mCursor.moveToLast();
             MilkText.setText(String.valueOf(mCursor.getInt(3)));
         }else{
             MilkText.setText("0");
@@ -320,7 +331,7 @@ public class MiniTabFragment extends Fragment {
                             }else if (datetime.get(Calendar.AM_PM) == Calendar.PM) {
                                 strAM_PM = "PM";
                             }
-                            String strHour = (datetime.get(Calendar.HOUR) == 0) ?"12":datetime.get(Calendar.HOUR)+"";
+                            String strHour = (datetime.get(Calendar.HOUR_OF_DAY) == 0) ?"12":datetime.get(Calendar.HOUR_OF_DAY)+"";
                             String strMin = String.valueOf(datetime.get(Calendar.MINUTE));
 
                             strHour = (strHour.length() ==1)? "0" + strHour : strHour;
@@ -429,7 +440,7 @@ public class MiniTabFragment extends Fragment {
                             }else if (datetime.get(Calendar.AM_PM) == Calendar.PM) {
                                 strAM_PM = "PM";
                             }
-                            String strHour = (datetime.get(Calendar.HOUR) == 0) ?"12":datetime.get(Calendar.HOUR)+"";
+                            String strHour = (datetime.get(Calendar.HOUR_OF_DAY) == 0) ?"12":datetime.get(Calendar.HOUR_OF_DAY)+"";
                             String strMin = String.valueOf(datetime.get(Calendar.MINUTE));
 
                             strHour = (strHour.length() ==1)? "0" + strHour : strHour;
@@ -561,17 +572,35 @@ public class MiniTabFragment extends Fragment {
         mListmilk.setDividerHeight(2);
 
         mListmilk.setOnItemClickListener(mItemListener);
+
+        mAdapter2 = new ArrayAdapter<String>(getActivity(),android.R.layout.simple_list_item_1,mArrMilk2);
+        mLastmilk = (ListView)v.findViewById(R.id.lastMilk);
+        mLastmilk.setAdapter(mAdapter2);
+        //mLastmilk.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        mLastmilk.setDivider(new ColorDrawable(Color.BLUE));
+        mLastmilk.setDividerHeight(2);
+
+
         SelectRtn();
     }
 
     public void SelectRtn(){
+
+        //두개로 나눠야 한다. 작업. 그리고 시계 작업 생각해보자 !!!!
 
         String NowDate;
         NowDate = String.valueOf(TextDate.getText());
         Log.d("Tag", "--->" + NowDate);
 
         mArrMilk.clear();
-        String Query = "select seq, date, time, milk  from Milk where date = '" + NowDate + "' order by date, time asc";
+        mArrMilk2.clear();
+        String Query = "select " +
+                "seq, " +
+                "date, " +
+                "time, " +
+                "milk, " +
+                "abs(Cast( (( JulianDay(time('now','localtime')) - JulianDay(replace(replace(time,'PM:',''),'AM:','')  || ':00') ) * 24* 60*60) As Integer )) as lastmilk  " +
+                "from Milk where date = '" + NowDate + "' order by date, time asc";
 
         String QuerySum = "select sum(milk) SumMilk from Milk where date = '" + NowDate + "'";
         mCursor = mDb.rawQuery(Query, null);
@@ -585,13 +614,23 @@ public class MiniTabFragment extends Fragment {
             String date = mCursor.getString(1);
             String time = mCursor.getString(2);
             int milk = mCursor.getInt(3);
+            int lastmilk = mCursor.getInt(4);
 
             String strRecord = date + " | " + time + " | " + milk + "ML";
 
-            Log.d("Tag", "--->" + strRecord);
+            int inthour;
+            int intmin;
+            inthour = Math.abs(lastmilk / 3600);
 
+            intmin = (lastmilk - (inthour * 3600))/60;
+
+            String strLastTime = inthour + " 시간" + intmin + " 분 전";
+
+            Log.d("Tag", "--->" + strRecord);
+            Log.d("Time", "--->" + strLastTime);
 
             mArrMilk.add(strRecord);
+            mArrMilk2.add(strLastTime);
 
         }
 

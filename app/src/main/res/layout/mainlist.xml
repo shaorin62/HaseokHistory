@@ -52,11 +52,20 @@
 
     <ListView
         android:id="@+id/listMilk"
-        android:layout_width="match_parent"
+        android:layout_width="250dp"
         android:layout_height="match_parent"
         android:layout_margin="5dp"
         android:layout_below="@+id/TextDate">
-
     </ListView>
+
+    <ListView
+        android:id="@+id/lastMilk"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="40dp"
+        android:layout_toRightOf = "@+id/listMilk"
+        android:layout_below="@+id/TextDate">
+    </ListView>
+
 
 </RelativeLayout>
