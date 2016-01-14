@@ -53,7 +53,7 @@ public class MiniTabFragment extends Fragment {
 
     //Tab1
     ArrayList<String> mArrMilk = new ArrayList<String>();
-    ArrayList<String> mArrMilk2 = new ArrayList<String>();
+    ArrayList<String> mArrTime = new ArrayList<String>();
     ArrayAdapter<String> mAdapter;
     ArrayAdapter<String> mAdapter2;
     int mSelectIndex = -1;
@@ -393,7 +393,6 @@ public class MiniTabFragment extends Fragment {
                     SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
                     TextDate.setText(String.valueOf(format2.format(mnow)));
                     SelectRtn();
-
                     break;
 
                 case R.id.btnInsert:
@@ -423,7 +422,6 @@ public class MiniTabFragment extends Fragment {
 
                     datePickerDialog = new DatePickerDialog(v.getContext(), callback3, year,month,day);
                     datePickerDialog.show();
-
 
                     break;
                 case R.id.ImageTime:
@@ -476,11 +474,9 @@ public class MiniTabFragment extends Fragment {
         title.setText(String.valueOf(position + 1));
 
         return view;
-
     }
 
     //------------------생성된 탭 별 이벤트 종료-------------------------------------------
-
 
     //-------SQLite 생성과 업그레이드------------------------------------------
 
@@ -511,8 +507,6 @@ public class MiniTabFragment extends Fragment {
         String strDateText = DateText.getText().toString();
         String strTimeText = TimeText.getText().toString();
 
-
-
         int intMilkText = Integer.parseInt(MilkText.getText().toString());
 
         //입력한 데이터로 쿼리문 작성
@@ -524,9 +518,7 @@ public class MiniTabFragment extends Fragment {
         Toast.makeText(getActivity(), "데이터가 저장되었습니다. ", Toast.LENGTH_LONG).show();
 
         mCursor.moveToLast();
-
         Log.d("TAG", "----->" + mSelectIndex);
-
         mSelectIndex = mCursor.getInt(0);
 
         //페이지 화면 이동
@@ -552,7 +544,6 @@ public class MiniTabFragment extends Fragment {
         alertDialog.dismiss();
     }
 
-
     //데이터 삭제
     public void onDelEvent(){
         mDb.execSQL("delete from Milk where seq = " + mSelectIndex);
@@ -573,27 +564,26 @@ public class MiniTabFragment extends Fragment {
 
         mListmilk.setOnItemClickListener(mItemListener);
 
-        mAdapter2 = new ArrayAdapter<String>(getActivity(),android.R.layout.simple_list_item_1,mArrMilk2);
+        mAdapter2 = new ArrayAdapter<String>(getActivity(),android.R.layout.simple_list_item_1,mArrTime);
         mLastmilk = (ListView)v.findViewById(R.id.lastMilk);
         mLastmilk.setAdapter(mAdapter2);
         //mLastmilk.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         mLastmilk.setDivider(new ColorDrawable(Color.BLUE));
         mLastmilk.setDividerHeight(2);
 
-
         SelectRtn();
     }
 
     public void SelectRtn(){
 
-        //두개로 나눠야 한다. 작업. 그리고 시계 작업 생각해보자 !!!!
+        //두개로 나눠야 한다. 작업. 그리고 시계 작업 생각해보자 !!!
 
         String NowDate;
         NowDate = String.valueOf(TextDate.getText());
         Log.d("Tag", "--->" + NowDate);
 
         mArrMilk.clear();
-        mArrMilk2.clear();
+        mArrTime.clear();
         String Query = "select " +
                 "seq, " +
                 "date, " +
@@ -603,6 +593,7 @@ public class MiniTabFragment extends Fragment {
                 "from Milk where date = '" + NowDate + "' order by date, time asc";
 
         String QuerySum = "select sum(milk) SumMilk from Milk where date = '" + NowDate + "'";
+
         mCursor = mDb.rawQuery(Query, null);
         mCursor2 = mDb.rawQuery(QuerySum, null);
 
@@ -624,23 +615,29 @@ public class MiniTabFragment extends Fragment {
 
             intmin = (lastmilk - (inthour * 3600))/60;
 
-            String strLastTime = inthour + " 시간" + intmin + " 분 전";
+            String strLastTime;
+
+            if(inthour == 0){
+                strLastTime = intmin + " 분 전";
+            }else{
+                strLastTime = inthour + " 시간" + intmin + " 분 전";
+            }
 
             Log.d("Tag", "--->" + strRecord);
             Log.d("Time", "--->" + strLastTime);
 
             mArrMilk.add(strRecord);
-            mArrMilk2.add(strLastTime);
+            mArrTime.add(strLastTime);
 
         }
-
-        //우유의 총량을 구한다.
-        mCursor2.moveToNext();
+        mCursor2.moveToLast();
         int SumMilk = mCursor2.getInt(0);
         Log.d("Tag", "--->" + SumMilk);
         sumMilk.setText(String.valueOf(SumMilk) + "ML");
 
         mAdapter.notifyDataSetChanged();
+        mAdapter2.notifyDataSetChanged();
+
     }
 
     //------------------개체 선택 Listener ---------------
@@ -682,7 +679,6 @@ public class MiniTabFragment extends Fragment {
 
         pop_milk.setText(String.valueOf(milk));
 
-
         ImageView mimgCal = (ImageView)layout.findViewById(R.id.ImageCal);
         ImageView mimgTime = (ImageView)layout.findViewById(R.id.ImageTime);
 
@@ -695,7 +691,6 @@ public class MiniTabFragment extends Fragment {
         btnUpdate.setOnClickListener(new ButtonClick());
         btnDelete.setOnClickListener(new ButtonClick());
 
-
         //선택된 데이터 팝업 생성
         alertDialog  = new AlertDialog.Builder(getActivity())
                 .setCancelable(false)
@@ -707,6 +702,5 @@ public class MiniTabFragment extends Fragment {
         alertDialog.show();
 
     }
-
 }
 
