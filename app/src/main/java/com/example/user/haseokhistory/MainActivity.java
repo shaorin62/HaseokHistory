@@ -25,14 +25,14 @@ public class MainActivity extends FragmentActivity {
         LoadIntroActivity();
 
         //이전에 실행되던 앱이 없을 경우에만 새로 시작
-        if (savedInstanceState == null) {
+       // if (savedInstanceState == null) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             MiniTabFragment fragment = new MiniTabFragment();
 
             //프래그먼트가 존재하지 않거나 선택된 항목이 다를경우 프래그먼트를 생성
             transaction.replace(R.id.mini_content_fragment, fragment);
             transaction.commit();
-        }
+        //}
     }
 
     //----------------------------- 앱 인트로 시작------------------------------------------

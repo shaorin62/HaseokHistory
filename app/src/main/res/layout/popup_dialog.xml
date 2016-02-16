@@ -65,6 +65,22 @@
         android:inputType="number"
         android:text="ML"/>
 
+    <ImageView
+        android:id="@+id/imgpopUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ImageTime"
+        android:layout_toRightOf = "@+id/ViewML"
+        android:src="@drawable/imgpopup"/>
+
+    <ImageView
+        android:id="@+id/imgpopDown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf = "@+id/ViewML"
+        android:layout_below="@+id/imgpopUp"
+        android:src="@drawable/imgpopdown"/>
+
     <Button
         android:id="@+id/btnUpdate"
         android:layout_width="wrap_content"

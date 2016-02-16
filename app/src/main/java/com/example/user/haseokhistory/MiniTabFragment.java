@@ -73,7 +73,6 @@ public class MiniTabFragment extends Fragment {
     Cursor mCursor2;
 
     GregorianCalendar calendar = new GregorianCalendar();
-
     int year = calendar.get(Calendar.YEAR);
     int month = calendar.get(Calendar.MONTH);
     int day= calendar.get(Calendar.DAY_OF_MONTH);
@@ -81,8 +80,6 @@ public class MiniTabFragment extends Fragment {
     int minute = calendar.get(Calendar.MINUTE);
 
     Calendar c = Calendar.getInstance();
-    Date mnow = new Date();
-
 
     //Fragment Cycle [onAttach() - > onCreate() - > onCreateView() - >onActivityCreated() -> onStart() -> onResume()]
     @Override
@@ -99,9 +96,7 @@ public class MiniTabFragment extends Fragment {
 
         mViewPager = (ViewPager) view.findViewById(R.id.viewpager);
         mViewPager.setAdapter(new MiniPagerAdapter());
-
         mSlidingTabLayout = (SlidingTabLayout) view.findViewById(R.id.sliding_tabs);
-
         mSlidingTabLayout.setViewPager(mViewPager, caculateScreenX());
     }
 
@@ -194,6 +189,7 @@ public class MiniTabFragment extends Fragment {
 
         //오늘 날짜를 생성한다.
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date mnow = new Date();
         TextDate.setText(String.valueOf(format.format(mnow)));
 
         ImageView mLeft = (ImageView)view.findViewById(R.id.imgLeft);
@@ -235,6 +231,7 @@ public class MiniTabFragment extends Fragment {
 
         //날짜 형식에 맞추기
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date mnow = new Date();
         DateText.setText(String.valueOf(format.format(mnow)));
 
         //시간 형식 맞추기
@@ -283,10 +280,7 @@ public class MiniTabFragment extends Fragment {
         mUp.setOnClickListener(new ButtonClick());
         mDown.setOnClickListener(new ButtonClick());
 
-
-
         return view;
-
     }
 
     //각종 버튼 클릭 이벤트 리스너
@@ -294,6 +288,7 @@ public class MiniTabFragment extends Fragment {
 
         public void onClick(final View v){
             int ReturnValue = 0;
+            Date mnow = new Date();
 
             switch (v.getId()){
                 case R.id.datePickButton :
@@ -374,7 +369,6 @@ public class MiniTabFragment extends Fragment {
                     break;
 
                 case R.id.imgLeft :
-
                     c.setTime(mnow);
                     c.add(Calendar.DATE, -1);
                     mnow = c.getTime();
@@ -453,6 +447,29 @@ public class MiniTabFragment extends Fragment {
                     timePickerDialog = new TimePickerDialog(v.getContext(), callback4, hour, minute,true );
                     timePickerDialog.show();
 
+                    break;
+
+                case R.id.imgpopUp :
+                    ReturnValue = Integer.parseInt(pop_milk.getText().toString());
+                    if(ReturnValue == 0 ){
+                        pop_milk.setText("10");
+                    }else{
+                        ReturnValue += 10;
+                        //Toast.makeText(v.getContext(),"--->" + ReturnValue, Toast.LENGTH_SHORT).show();
+                        pop_milk.setText(String.valueOf(ReturnValue));
+                    }
+
+                    break;
+
+                case R.id.imgpopDown :
+                    ReturnValue = Integer.parseInt(pop_milk.getText().toString());
+                    if(ReturnValue == 0 ){
+                        pop_milk.setText("0");
+                    }else{
+                        ReturnValue -= 10;
+                        //Toast.makeText(v.getContext(),"--->" + ReturnValue, Toast.LENGTH_SHORT).show();
+                        pop_milk.setText(String.valueOf(ReturnValue));
+                    }
                     break;
             }
         }
@@ -568,7 +585,7 @@ public class MiniTabFragment extends Fragment {
         mLastmilk = (ListView)v.findViewById(R.id.lastMilk);
         mLastmilk.setAdapter(mAdapter2);
         //mLastmilk.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        mLastmilk.setDivider(new ColorDrawable(Color.BLUE));
+        mLastmilk.setDivider(new ColorDrawable(Color.WHITE));
         mLastmilk.setDividerHeight(2);
 
         SelectRtn();
@@ -585,12 +602,16 @@ public class MiniTabFragment extends Fragment {
         mArrMilk.clear();
         mArrTime.clear();
         String Query = "select " +
-                "seq, " +
-                "date, " +
-                "time, " +
-                "milk, " +
-                "abs(Cast( (( JulianDay(time('now','localtime')) - JulianDay(replace(replace(time,'PM:',''),'AM:','')  || ':00') ) * 24* 60*60) As Integer )) as lastmilk  " +
-                "from Milk where date = '" + NowDate + "' order by date, time asc";
+                "a.seq, " +
+                "a.date, " +
+                "a.time, " +
+                "a.milk, " +
+                "case  ifnull(b.seq,0) when 0 then " +
+                "abs(Cast( (( JulianDay(time('now','localtime')) - JulianDay(replace(replace(a.time,'PM:',''),'AM:','')  || ':00') ) * 24* 60*60) As Integer )) " +
+                "else " +
+                "abs(Cast( (( JulianDay(replace(replace(a.time,'PM:',''),'AM:','')  || ':00') - JulianDay(replace(replace(b.time,'PM:',''),'AM:','')  || ':00') ) * 24* 60*60) As Integer ))  " +
+                "end as lastmilk  " +
+                "from Milk a left join Milk b on a.seq = b.seq -1  where a.date = '" + NowDate + "' order by a.date, a.time asc";
 
         String QuerySum = "select sum(milk) SumMilk from Milk where date = '" + NowDate + "'";
 
@@ -607,7 +628,7 @@ public class MiniTabFragment extends Fragment {
             int milk = mCursor.getInt(3);
             int lastmilk = mCursor.getInt(4);
 
-            String strRecord = date + " | " + time + " | " + milk + "ML";
+            String strRecord = time + "  |  " + milk + " ML";
 
             int inthour;
             int intmin;
@@ -618,9 +639,9 @@ public class MiniTabFragment extends Fragment {
             String strLastTime;
 
             if(inthour == 0){
-                strLastTime = intmin + " 분 전";
+                strLastTime = intmin + " 분";
             }else{
-                strLastTime = inthour + " 시간" + intmin + " 분 전";
+                strLastTime = inthour + " 시간" + intmin + " 분";
             }
 
             Log.d("Tag", "--->" + strRecord);
@@ -648,7 +669,7 @@ public class MiniTabFragment extends Fragment {
         }
     };
 
-    public void ViewRecord(int nIndex){
+    public void ViewRecord(int nIndex) {
 
         mCursor.moveToPosition(nIndex);
         int nSEQ = mCursor.getInt(0);
@@ -682,12 +703,17 @@ public class MiniTabFragment extends Fragment {
         ImageView mimgCal = (ImageView)layout.findViewById(R.id.ImageCal);
         ImageView mimgTime = (ImageView)layout.findViewById(R.id.ImageTime);
 
-        mimgCal.setOnClickListener(new ButtonClick());
-        mimgTime.setOnClickListener(new ButtonClick());
+        //팝업의 버튼
+        ImageView btnpopUp = (ImageView)layout.findViewById(R.id.imgpopUp);
+        ImageView btnpopDown = (ImageView)layout.findViewById(R.id.imgpopDown);
 
         Button btnUpdate= (Button)layout.findViewById(R.id.btnUpdate);
         Button btnDelete = (Button)layout.findViewById(R.id.btnDelete);
 
+        mimgCal.setOnClickListener(new ButtonClick());
+        mimgTime.setOnClickListener(new ButtonClick());
+        btnpopUp.setOnClickListener(new ButtonClick());
+        btnpopDown.setOnClickListener(new ButtonClick());
         btnUpdate.setOnClickListener(new ButtonClick());
         btnDelete.setOnClickListener(new ButtonClick());
 
@@ -700,7 +726,7 @@ public class MiniTabFragment extends Fragment {
                 .show();
 
         alertDialog.show();
-
+        SelectRtn();
     }
 }
 
