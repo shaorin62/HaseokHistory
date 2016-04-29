@@ -59,6 +59,9 @@ public class MiniTabFragment extends Fragment {
     int mSelectIndex = -1;
     TextView TextDate;
     TextView sumMilk;
+    TextView Hmonth;
+    TextView Hday;
+    TextView totalDay;
 
     //TAB2
     TextView DateText ;
@@ -80,6 +83,9 @@ public class MiniTabFragment extends Fragment {
     int minute = calendar.get(Calendar.MINUTE);
 
     Calendar c = Calendar.getInstance();
+
+    Date mnow = new Date();
+
 
     //Fragment Cycle [onAttach() - > onCreate() - > onCreateView() - >onActivityCreated() -> onStart() -> onResume()]
     @Override
@@ -187,6 +193,10 @@ public class MiniTabFragment extends Fragment {
         TextDate = (TextView)view.findViewById(R.id.TextDate);
         sumMilk = (TextView)view.findViewById(R.id.sumMilk);
 
+        Hmonth = (TextView)view.findViewById(R.id.Hmonth);
+        Hday = (TextView)view.findViewById(R.id.Hday);
+        totalDay = (TextView)view.findViewById(R.id.totalDay);
+
         //오늘 날짜를 생성한다.
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         Date mnow = new Date();
@@ -288,7 +298,6 @@ public class MiniTabFragment extends Fragment {
 
         public void onClick(final View v){
             int ReturnValue = 0;
-            Date mnow = new Date();
 
             switch (v.getId()){
                 case R.id.datePickButton :
@@ -369,6 +378,7 @@ public class MiniTabFragment extends Fragment {
                     break;
 
                 case R.id.imgLeft :
+
                     c.setTime(mnow);
                     c.add(Calendar.DATE, -1);
                     mnow = c.getTime();
@@ -613,7 +623,9 @@ public class MiniTabFragment extends Fragment {
                 "end as lastmilk  " +
                 "from Milk a left join Milk b on a.seq = b.seq -1  where a.date = '" + NowDate + "' order by a.date, a.time asc";
 
-        String QuerySum = "select sum(milk) SumMilk from Milk where date = '" + NowDate + "'";
+        //2015-10-17 생일 기준
+        String QuerySum = "select sum(milk) SumMilk ,(JulianDay(date('now')) - JulianDay('2015-10-17')) / 30  Hmonth ," +
+                "(JulianDay(date('now')) - JulianDay('2015-10-17'))  totalDay from Milk where date = '" + NowDate + "'";
 
         mCursor = mDb.rawQuery(Query, null);
         mCursor2 = mDb.rawQuery(QuerySum, null);
@@ -632,7 +644,7 @@ public class MiniTabFragment extends Fragment {
 
             int inthour;
             int intmin;
-            inthour = Math.abs(lastmilk / 3600);
+            inthour = Math.abs(lastmilk / 3600); // 시간
 
             intmin = (lastmilk - (inthour * 3600))/60;
 
@@ -653,8 +665,19 @@ public class MiniTabFragment extends Fragment {
         }
         mCursor2.moveToLast();
         int SumMilk = mCursor2.getInt(0);
-        Log.d("Tag", "--->" + SumMilk);
+        //개월수 // 총 일수
+        int hmonth ,hday,  total;
+        hmonth = mCursor2.getInt(1);
+        total = mCursor2.getInt(2);
+        hday = total - (hmonth * 30);
+
+
+        Log.d("Tag", "--->" + SumMilk + " = = " + hmonth + " = = " + hday + " = = " + total);
+
         sumMilk.setText(String.valueOf(SumMilk) + "ML");
+        Hmonth.setText(String.valueOf(hmonth));
+        Hday.setText(String.valueOf(hday));
+        totalDay.setText(String.valueOf(total));
 
         mAdapter.notifyDataSetChanged();
         mAdapter2.notifyDataSetChanged();

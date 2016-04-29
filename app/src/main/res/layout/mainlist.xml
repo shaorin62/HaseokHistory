@@ -4,11 +4,75 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/TextDate"
-        android:layout_width="130dp"
+        android:id="@+id/Hmonth"
+        android:layout_width="30dp"
         android:layout_height="40dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="5dp"
         android:layout_marginLeft="20dp"
+        android:gravity="center"
+        android:textSize="15dp"
+        />
+
+    <TextView
+        android:id="@+id/HmonthText"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="5dp"
+        android:layout_toRightOf = "@+id/Hmonth"
+        android:textSize="15dp"
+        android:gravity="center"
+        android:text="개월"
+        />
+
+    <TextView
+    android:id="@+id/Hday"
+    android:layout_width="30dp"
+    android:layout_height="40dp"
+    android:layout_marginTop="5dp"
+    android:layout_toRightOf = "@+id/HmonthText"
+    android:gravity="center"
+    android:textSize="15dp"
+    />
+
+    <TextView
+        android:id="@+id/HdayText"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="5dp"
+        android:layout_toRightOf = "@+id/Hday"
+        android:textSize="15dp"
+        android:gravity="center"
+        android:text="일"
+        />
+
+    <TextView
+        android:id="@+id/totalDayText"
+        android:layout_width="70dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="5dp"
+        android:layout_toRightOf = "@+id/HdayText"
+        android:gravity="center"
+        android:textSize="15dp"
+        android:text="총일수 : "
+        />
+
+    <TextView
+        android:id="@+id/totalDay"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="5dp"
+        android:layout_toRightOf = "@+id/totalDayText"
+        android:textSize="15dp"
+        android:gravity="center"
+
+        />
+
+    <TextView
+        android:id="@+id/TextDate"
+        android:layout_width="140dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginLeft="15dp"
         android:gravity="center"
         android:textSize="25dp"
         />
@@ -17,7 +81,7 @@
         android:id="@+id/imgLeft"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:layout_toRightOf = "@+id/TextDate"
         android:src="@drawable/imgleft"/>
 
@@ -25,7 +89,7 @@
         android:id="@+id/imgRight"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:layout_toRightOf = "@+id/imgLeft"
         android:src="@drawable/imgright"/>
 
@@ -33,7 +97,7 @@
         android:id="@+id/Sum"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:layout_toRightOf = "@+id/imgRight"
         android:textSize="18dp"
         android:gravity="center"
@@ -44,7 +108,7 @@
         android:id="@+id/sumMilk"
         android:layout_width="fill_parent"
         android:layout_height="40dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:layout_toRightOf = "@+id/Sum"
         android:gravity="center"
         android:textSize="20dp"
